@@ -1,0 +1,270 @@
+import axios from 'axios';
+import { adminTokenStore } from './adminTokenStore';
+import type { 
+  AdminUser, 
+  VipPackage, 
+  Transaction, 
+  AdminFood, 
+  AdminExercise, 
+  DashboardStats, 
+  FoodStats, 
+  ExerciseStats, 
+  PaginatedResponse, 
+  UserStats 
+} from './adminTypes';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5184/api';
+
+// Admin API Client
+const adminApiClient = axios.create({
+  baseURL: `${API_URL}/admin`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor to add admin token
+adminApiClient.interceptors.request.use(
+  async (config) => {
+    const token = adminTokenStore.getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor for error handling
+adminApiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      adminTokenStore.clearToken();
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// ==================== AUTHENTICATION ====================
+
+export const adminAuth = {
+  login: async (email: string, password: string) => {
+    const response = await adminApiClient.post('/auth/login', { email, password });
+    if (response.data.token) {
+      adminTokenStore.setToken(response.data.token);
+    }
+    return response.data;
+  },
+
+  logout: async () => {
+    adminTokenStore.clearToken();
+  },
+
+  checkAuth: async () => {
+    const token = adminTokenStore.getToken();
+    return !!token;
+  },
+};
+
+// ==================== DASHBOARD ====================
+
+export interface RecentActivity {
+  id: string;
+  type: 'user' | 'food' | 'exercise';
+  action: string;
+  description: string;
+  timestamp: string;
+}
+
+export const adminDashboard = {
+  getStats: async (): Promise<DashboardStats> => {
+    const response = await adminApiClient.get('/dashboard/stats');
+    return response.data;
+  },
+
+  getRecentActivity: async (limit: number = 10): Promise<RecentActivity[]> => {
+    const response = await adminApiClient.get('/dashboard/recent-activity', {
+      params: { limit },
+    });
+    return response.data;
+  },
+
+  getUserGrowth: async () => {
+    const response = await adminApiClient.get('/dashboard/user-growth');
+    return response.data;
+  }
+};
+
+// ==================== USERS MANAGEMENT ====================
+
+export const adminUsers = {
+  getAll: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    status?: string;
+  }): Promise<PaginatedResponse<AdminUser>> => {
+    const response = await adminApiClient.get('/users', { params });
+    return response.data;
+  },
+
+  getById: async (id: number): Promise<AdminUser> => {
+    const response = await adminApiClient.get(`/users/${id}`);
+    return response.data;
+  },
+
+  toggleLock: async (id: number): Promise<AdminUser> => {
+    const response = await adminApiClient.put(`/users/${id}/toggle-lock`);
+    return response.data;
+  },
+
+  grantVip: async (userId: number, packageId: number): Promise<AdminUser> => {
+    const response = await adminApiClient.post(`/users/${userId}/grant-vip`, { packageId });
+    return response.data;
+  },
+
+  revokeVip: async (userId: number): Promise<AdminUser> => {
+    const response = await adminApiClient.post(`/users/${userId}/revoke-vip`);
+    return response.data;
+  },
+
+  getStats: async (): Promise<UserStats> => {
+    const response = await adminApiClient.get('/users/stats');
+    return response.data;
+  },
+};
+
+// ==================== VIP PACKAGES & TRANSACTIONS ====================
+
+export const adminVip = {
+  getPackages: async (): Promise<VipPackage[]> => {
+    const response = await adminApiClient.get('/vip/packages');
+    return response.data;
+  },
+
+  createPackage: async (data: Partial<VipPackage>): Promise<VipPackage> => {
+    const response = await adminApiClient.post('/vip/packages', data);
+    return response.data;
+  },
+
+  updatePackage: async (id: number, data: Partial<VipPackage>): Promise<VipPackage> => {
+    const response = await adminApiClient.put(`/vip/packages/${id}`, data);
+    return response.data;
+  },
+
+  deletePackage: async (id: number): Promise<void> => {
+    await adminApiClient.delete(`/vip/packages/${id}`);
+  },
+
+  getTransactions: async (params?: { page?: number; pageSize?: number; status?: string }): Promise<PaginatedResponse<Transaction>> => {
+    const response = await adminApiClient.get('/vip/transactions', { params });
+    return response.data;
+  },
+};
+
+// ==================== FOODS MANAGEMENT ====================
+
+export const adminFoods = {
+  getAll: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    category?: string;
+    visibility?: string;
+  }): Promise<PaginatedResponse<AdminFood>> => {
+    const response = await adminApiClient.get('/foods', { params });
+    return response.data;
+  },
+
+  getById: async (id: number): Promise<AdminFood> => {
+    const response = await adminApiClient.get(`/foods/${id}`);
+    return response.data;
+  },
+
+  create: async (data: Partial<AdminFood>): Promise<AdminFood> => {
+    const response = await adminApiClient.post('/foods', data);
+    return response.data;
+  },
+
+  update: async (id: number, data: Partial<AdminFood>): Promise<AdminFood> => {
+    const response = await adminApiClient.put(`/foods/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await adminApiClient.delete(`/foods/${id}`);
+  },
+
+  toggleVisibility: async (id: number): Promise<AdminFood> => {
+    const response = await adminApiClient.put(`/foods/${id}/toggle-visibility`);
+    return response.data;
+  },
+
+  getStats: async (): Promise<FoodStats> => {
+    const response = await adminApiClient.get('/foods/stats');
+    return response.data;
+  },
+
+  importCsv: async (csvData: string): Promise<{ imported: number }> => {
+    const response = await adminApiClient.post('/foods/import-csv', { csvData });
+    return response.data;
+  },
+
+  getCategories: async (): Promise<string[]> => {
+    const response = await adminApiClient.get('/foods/categories');
+    return response.data;
+  },
+};
+
+// ==================== EXERCISES MANAGEMENT ====================
+
+export const adminExercises = {
+  getAll: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    category?: string;
+    visibility?: string;
+  }): Promise<PaginatedResponse<AdminExercise>> => {
+    const response = await adminApiClient.get('/exercises', { params });
+    return response.data;
+  },
+
+  getById: async (id: number): Promise<AdminExercise> => {
+    const response = await adminApiClient.get(`/exercises/${id}`);
+    return response.data;
+  },
+
+  create: async (data: Partial<AdminExercise>): Promise<AdminExercise> => {
+    const response = await adminApiClient.post('/exercises', data);
+    return response.data;
+  },
+
+  update: async (id: number, data: Partial<AdminExercise>): Promise<AdminExercise> => {
+    const response = await adminApiClient.put(`/exercises/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await adminApiClient.delete(`/exercises/${id}`);
+  },
+
+  toggleVisibility: async (id: number): Promise<AdminExercise> => {
+    const response = await adminApiClient.put(`/exercises/${id}/toggle-visibility`);
+    return response.data;
+  },
+
+  getStats: async (): Promise<ExerciseStats> => {
+    const response = await adminApiClient.get('/exercises/stats');
+    return response.data;
+  },
+
+  getCategories: async (): Promise<string[]> => {
+    const response = await adminApiClient.get('/exercises/categories');
+    return response.data;
+  },
+};
+
+export default adminApiClient;
