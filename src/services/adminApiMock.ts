@@ -9,6 +9,7 @@ import type {
   VipPackage, 
   Transaction, 
   AdminFood, 
+  AdminFoodCategory,
   AdminExercise, 
   DashboardStats, 
   UserGrowthPoint 
@@ -79,33 +80,29 @@ export let mockUsers: AdminUser[] = [
 ];
 
 export let mockFoods: AdminFood[] = [
-  { id: 1, nameVi: 'Cơm trắng', nameEn: 'White Rice', category: 'Tinh bột', calories: 130, protein: 2.7, carbs: 28.2, fat: 0.3, servingSize: 100, unit: 'g', isVisible: true },
-  { id: 2, nameVi: 'Phở bò', nameEn: 'Beef Pho', category: 'Món chính', calories: 350, protein: 15, carbs: 45, fat: 12, servingSize: 1, unit: 'bát', isVisible: true },
-  { id: 3, nameVi: 'Bánh mì thịt', nameEn: 'Banh Mi', category: 'Bánh mì', calories: 340, protein: 14, carbs: 38, fat: 14, servingSize: 1, unit: 'ổ', isVisible: true },
-  { id: 4, nameVi: 'Gà luộc', nameEn: 'Boiled Chicken', category: 'Thịt', calories: 165, protein: 31, carbs: 0, fat: 3.6, servingSize: 100, unit: 'g', isVisible: true },
-  { id: 5, nameVi: 'Rau muống xào', nameEn: 'Stir-fried Morning Glory', category: 'Rau củ', calories: 85, protein: 3, carbs: 8, fat: 4, servingSize: 100, unit: 'g', isVisible: true },
-  { id: 6, nameVi: 'Bún bò Huế', nameEn: 'Hue Beef Noodle Soup', category: 'Món chính', calories: 430, protein: 22, carbs: 55, fat: 14, servingSize: 1, unit: 'tô', isVisible: true },
-  { id: 7, nameVi: 'Trứng chiên', nameEn: 'Fried Egg', category: 'Trứng & Sữa', calories: 185, protein: 12, carbs: 1, fat: 14, servingSize: 2, unit: 'quả', isVisible: true },
-  { id: 8, nameVi: 'Sữa chua không đường', nameEn: 'Plain Yogurt', category: 'Trứng & Sữa', calories: 61, protein: 3.5, carbs: 4.7, fat: 3.3, servingSize: 100, unit: 'g', isVisible: true },
-  { id: 9, nameVi: 'Chuối', nameEn: 'Banana', category: 'Trái cây', calories: 89, protein: 1.1, carbs: 23, fat: 0.3, servingSize: 1, unit: 'quả', isVisible: true },
-  { id: 10, nameVi: 'Salad trộn', nameEn: 'Mixed Salad', category: 'Rau củ', calories: 45, protein: 2, carbs: 8, fat: 1, servingSize: 100, unit: 'g', isVisible: false },
-  { id: 11, nameVi: 'Cá hồi áp chảo', nameEn: 'Pan-seared Salmon', category: 'Hải sản', calories: 208, protein: 20, carbs: 0, fat: 13, servingSize: 100, unit: 'g', isVisible: true },
-  { id: 12, nameVi: 'Đậu phụ hấp', nameEn: 'Steamed Tofu', category: 'Đậu & Hạt', calories: 76, protein: 8, carbs: 2, fat: 4, servingSize: 100, unit: 'g', isVisible: true },
+  { id: 'mock-1', nameVi: 'Cơm trắng', nameEn: 'White Rice', categoryId: 1, status: 1, servingSizeG: 100, servingUnitVi: 'g', thumbnailUrl: null, createdAt: daysAgo(30), nutrition: { caloriesKcal: 130, proteinG: 2.7, carbsG: 28.2, fatG: 0.3 } },
+  { id: 'mock-2', nameVi: 'Phở bò', nameEn: 'Beef Pho', categoryId: 1, status: 1, servingSizeG: 1, servingUnitVi: 'bát', thumbnailUrl: null, createdAt: daysAgo(28), nutrition: { caloriesKcal: 350, proteinG: 15, carbsG: 45, fatG: 12 } },
+  { id: 'mock-3', nameVi: 'Gà luộc', nameEn: 'Boiled Chicken', categoryId: 4, status: 1, servingSizeG: 100, servingUnitVi: 'g', thumbnailUrl: null, createdAt: daysAgo(25), nutrition: { caloriesKcal: 165, proteinG: 31, carbsG: 0, fatG: 3.6 } },
+  { id: 'mock-4', nameVi: 'Rau muống xào', nameEn: 'Stir-fried Morning Glory', categoryId: 2, status: 1, servingSizeG: 100, servingUnitVi: 'g', thumbnailUrl: null, createdAt: daysAgo(22), nutrition: { caloriesKcal: 85, proteinG: 3, carbsG: 8, fatG: 4 } },
+  { id: 'mock-5', nameVi: 'Trứng chiên', nameEn: 'Fried Egg', categoryId: 5, status: 1, servingSizeG: 2, servingUnitVi: 'quả', thumbnailUrl: null, createdAt: daysAgo(20), nutrition: { caloriesKcal: 185, proteinG: 12, carbsG: 1, fatG: 14 } },
+  { id: 'mock-6', nameVi: 'Chuối', nameEn: 'Banana', categoryId: 3, status: 1, servingSizeG: 1, servingUnitVi: 'quả', thumbnailUrl: null, createdAt: daysAgo(18), nutrition: { caloriesKcal: 89, proteinG: 1.1, carbsG: 23, fatG: 0.3 } },
+  { id: 'mock-7', nameVi: 'Cá hồi áp chảo', nameEn: 'Pan-seared Salmon', categoryId: 4, status: 1, servingSizeG: 100, servingUnitVi: 'g', thumbnailUrl: null, createdAt: daysAgo(15), nutrition: { caloriesKcal: 208, proteinG: 20, carbsG: 0, fatG: 13 } },
+  { id: 'mock-8', nameVi: 'Đậu phụ hấp', nameEn: 'Steamed Tofu', categoryId: 6, status: 0, servingSizeG: 100, servingUnitVi: 'g', thumbnailUrl: null, createdAt: daysAgo(10), nutrition: { caloriesKcal: 76, proteinG: 8, carbsG: 2, fatG: 4 } },
 ];
 
 export let mockExercises: AdminExercise[] = [
-  { id: 1, nameVi: 'Chạy bộ (tốc độ vừa)', nameEn: 'Running (moderate)', category: 'Cardio', metValue: 8.0, calPerKgPerHour: 8.0, isVisible: true, imageUrl: null },
-  { id: 2, nameVi: 'Đi bộ nhanh', nameEn: 'Brisk Walking', category: 'Cardio', metValue: 3.8, calPerKgPerHour: 3.8, isVisible: true, imageUrl: null },
-  { id: 3, nameVi: 'Bơi lội', nameEn: 'Swimming', category: 'Cardio', metValue: 7.0, calPerKgPerHour: 7.0, isVisible: true, imageUrl: null },
-  { id: 4, nameVi: 'Đạp xe', nameEn: 'Cycling', category: 'Cardio', metValue: 6.0, calPerKgPerHour: 6.0, isVisible: true, imageUrl: null },
-  { id: 5, nameVi: 'Yoga', nameEn: 'Yoga', category: 'Linh hoạt', metValue: 2.5, calPerKgPerHour: 2.5, isVisible: true, imageUrl: null },
-  { id: 6, nameVi: 'Gym (luyện tạ)', nameEn: 'Weight Training', category: 'Sức mạnh', metValue: 5.0, calPerKgPerHour: 5.0, isVisible: true, imageUrl: null },
-  { id: 7, nameVi: 'Aerobic', nameEn: 'Aerobics', category: 'Cardio', metValue: 6.5, calPerKgPerHour: 6.5, isVisible: true, imageUrl: null },
-  { id: 8, nameVi: 'Nhảy dây', nameEn: 'Jump Rope', category: 'Cardio', metValue: 10.0, calPerKgPerHour: 10.0, isVisible: true, imageUrl: null },
-  { id: 9, nameVi: 'Bóng đá', nameEn: 'Football', category: 'Thể thao', metValue: 7.0, calPerKgPerHour: 7.0, isVisible: false, imageUrl: null },
-  { id: 10, nameVi: 'Cầu lông', nameEn: 'Badminton', category: 'Thể thao', metValue: 5.5, calPerKgPerHour: 5.5, isVisible: true, imageUrl: null },
-  { id: 11, nameVi: 'Bóng rổ', nameEn: 'Basketball', category: 'Thể thao', metValue: 6.5, calPerKgPerHour: 6.5, isVisible: true, imageUrl: null },
-  { id: 12, nameVi: 'Thiền', nameEn: 'Meditation', category: 'Linh hoạt', metValue: 1.5, calPerKgPerHour: 1.5, isVisible: false, imageUrl: null },
+  { id: 1, nameVi: 'Chạy bộ (tốc độ vừa)', nameEn: 'Running (moderate)', category: 'Cardio', metValue: 8.0, calPerKgPerHour: 8.0, isVisible: true, iconUrl: null },
+  { id: 2, nameVi: 'Đi bộ nhanh', nameEn: 'Brisk Walking', category: 'Cardio', metValue: 3.8, calPerKgPerHour: 3.8, isVisible: true, iconUrl: null },
+  { id: 3, nameVi: 'Bơi lội', nameEn: 'Swimming', category: 'Cardio', metValue: 7.0, calPerKgPerHour: 7.0, isVisible: true, iconUrl: null },
+  { id: 4, nameVi: 'Đạp xe', nameEn: 'Cycling', category: 'Cardio', metValue: 6.0, calPerKgPerHour: 6.0, isVisible: true, iconUrl: null },
+  { id: 5, nameVi: 'Yoga', nameEn: 'Yoga', category: 'Linh hoạt', metValue: 2.5, calPerKgPerHour: 2.5, isVisible: true, iconUrl: null },
+  { id: 6, nameVi: 'Gym (luyện tạ)', nameEn: 'Weight Training', category: 'Sức mạnh', metValue: 5.0, calPerKgPerHour: 5.0, isVisible: true, iconUrl: null },
+  { id: 7, nameVi: 'Aerobic', nameEn: 'Aerobics', category: 'Cardio', metValue: 6.5, calPerKgPerHour: 6.5, isVisible: true, iconUrl: null },
+  { id: 8, nameVi: 'Nhảy dây', nameEn: 'Jump Rope', category: 'Cardio', metValue: 10.0, calPerKgPerHour: 10.0, isVisible: true, iconUrl: null },
+  { id: 9, nameVi: 'Bóng đá', nameEn: 'Football', category: 'Thể thao', metValue: 7.0, calPerKgPerHour: 7.0, isVisible: false, iconUrl: null },
+  { id: 10, nameVi: 'Cầu lông', nameEn: 'Badminton', category: 'Thể thao', metValue: 5.5, calPerKgPerHour: 5.5, isVisible: true, iconUrl: null },
+  { id: 11, nameVi: 'Bóng rổ', nameEn: 'Basketball', category: 'Thể thao', metValue: 6.5, calPerKgPerHour: 6.5, isVisible: true, iconUrl: null },
+  { id: 12, nameVi: 'Thiền', nameEn: 'Meditation', category: 'Linh hoạt', metValue: 1.5, calPerKgPerHour: 1.5, isVisible: false, iconUrl: null },
 ];
 
 let nextVipPackageId = 4;
@@ -348,32 +345,44 @@ export const adminVip = {
 // ============================================================
 
 export const adminFoods = {
-  getAll: async (params?: { page?: number; pageSize?: number; search?: string; category?: string; visibility?: string }) => {
+  getAll: async (params?: { page?: number; pageSize?: number; search?: string; categoryId?: number; status?: number }) => {
     await delay();
     let filtered = [...mockFoods];
     if (params?.search) {
       const s = params.search.toLowerCase();
-      filtered = filtered.filter(f => f.nameVi.toLowerCase().includes(s) || f.nameEn.toLowerCase().includes(s));
+      filtered = filtered.filter(f => f.nameVi.toLowerCase().includes(s) || (f.nameEn || '').toLowerCase().includes(s));
     }
-    if (params?.category && params.category !== 'all') filtered = filtered.filter(f => f.category === params.category);
-    if (params?.visibility === 'visible') filtered = filtered.filter(f => f.isVisible);
-    else if (params?.visibility === 'hidden') filtered = filtered.filter(f => !f.isVisible);
+    if (params?.categoryId !== undefined) filtered = filtered.filter(f => f.categoryId === params.categoryId);
+    if (params?.status !== undefined) filtered = filtered.filter(f => f.status === params.status);
     return paginate(filtered, params?.page || 1, params?.pageSize || 20);
   },
 
-  getCategories: async () => {
+  getCategories: async (): Promise<AdminFoodCategory[]> => {
     await delay(100);
-    return [...new Set(mockFoods.map(f => f.category))];
+    const CATEGORY_NAMES: Record<number, string> = {
+      1: 'Ngũ cốc & Tinh bột', 2: 'Rau củ', 3: 'Trái cây', 4: 'Thịt & Hải sản',
+      5: 'Sữa & Trứng', 6: 'Đậu & Hạt', 7: 'Dầu & Chất béo', 8: 'Gia vị & Nước chấm',
+      9: 'Đồ uống', 10: 'Thức ăn nhanh', 11: 'Bánh & Kẹo', 12: 'Khác',
+    };
+    const grouped = mockFoods.reduce((acc, f) => {
+      acc[f.categoryId] = (acc[f.categoryId] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>);
+    return Object.entries(grouped).map(([id, count]) => ({
+      id: Number(id),
+      name: CATEGORY_NAMES[Number(id)] || `Danh mục ${id}`,
+      foodCount: count,
+    }));
   },
 
-  create: async (data: Omit<AdminFood, 'id'>) => {
+  create: async (data: Omit<AdminFood, 'id' | 'createdAt'>) => {
     await delay();
-    const food: AdminFood = { ...data, id: nextFoodId++ };
+    const food: AdminFood = { ...data, id: `mock-${nextFoodId++}`, createdAt: new Date().toISOString() };
     mockFoods.push(food);
     return food;
   },
 
-  update: async (id: number, data: Partial<AdminFood>) => {
+  update: async (id: string, data: Partial<AdminFood>) => {
     await delay();
     const idx = mockFoods.findIndex(f => f.id === id);
     if (idx === -1) throw new Error('Food not found');
@@ -381,55 +390,27 @@ export const adminFoods = {
     return mockFoods[idx];
   },
 
-  delete: async (id: number) => {
+  delete: async (id: string) => {
     await delay();
     const idx = mockFoods.findIndex(f => f.id === id);
     if (idx === -1) throw new Error('Food not found');
     mockFoods.splice(idx, 1);
-    return { success: true };
   },
 
-  toggleVisibility: async (id: number) => {
+  toggleVisibility: async (id: string) => {
     await delay();
     const idx = mockFoods.findIndex(f => f.id === id);
     if (idx === -1) throw new Error('Food not found');
-    mockFoods[idx].isVisible = !mockFoods[idx].isVisible;
-    return mockFoods[idx];
-  },
-
-  importCsv: async (csvData: string) => {
-    await delay(1000);
-    const lines = csvData.trim().split('\n').slice(1);
-    let imported = 0;
-    for (const line of lines) {
-      const [nameVi, nameEn, category, calories, protein, carbs, fat, servingSize, unit] = line.split(',').map(s => s.trim());
-      if (nameVi && calories) {
-        mockFoods.push({
-          id: nextFoodId++,
-          nameVi,
-          nameEn: nameEn || '',
-          category: category || 'Khác',
-          calories: parseFloat(calories) || 0,
-          protein: parseFloat(protein) || 0,
-          carbs: parseFloat(carbs) || 0,
-          fat: parseFloat(fat) || 0,
-          servingSize: parseFloat(servingSize) || 100,
-          unit: unit || 'g',
-          isVisible: true,
-        });
-        imported++;
-      }
-    }
-    return { imported };
+    mockFoods[idx].status = mockFoods[idx].status === 1 ? 0 : 1;
   },
 
   getStats: async () => {
     await delay();
     return {
       total: mockFoods.length,
-      visible: mockFoods.filter(f => f.isVisible).length,
-      hidden: mockFoods.filter(f => !f.isVisible).length,
-      categories: [...new Set(mockFoods.map(f => f.category))].length,
+      visible: mockFoods.filter(f => f.status === 1).length,
+      hidden: mockFoods.filter(f => f.status === 0).length,
+      categories: [...new Set(mockFoods.map(f => f.categoryId))].length,
     };
   },
 };

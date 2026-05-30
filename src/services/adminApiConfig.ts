@@ -8,7 +8,7 @@
 import * as mockApi from './adminApiMock';
 import * as realApi from './adminApi';
 
-export const USE_MOCK_API = true; // ⬅️ CHANGE HERE TO SWITCH
+export const USE_MOCK_API = false; // ⬅️ CHANGE HERE TO SWITCH
 
 // Conditional API export
 export const adminAuth = USE_MOCK_API ? mockApi.adminAuth : realApi.adminAuth;
@@ -24,6 +24,8 @@ export type {
   VipPackage,
   Transaction,
   AdminFood,
+  AdminFoodNutrition,
+  AdminFoodCategory,
   AdminExercise,
   DashboardStats,
   UserGrowthPoint,

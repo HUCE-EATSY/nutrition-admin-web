@@ -32,19 +32,32 @@ export interface Transaction {
   createdAt: string;
 }
 
-export interface AdminFood {
-  id: number;
-  nameVi: string;
-  nameEn: string;
-  category: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  servingSize: number;
-  unit: string;
-  isVisible: boolean;
+export interface AdminFoodNutrition {
+  caloriesKcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
 }
+
+export interface AdminFood {
+  id: string; // Guid from backend
+  nameVi: string;
+  nameEn: string | null;
+  categoryId: number;
+  status: number; // 1 = visible, 0 = hidden
+  servingSizeG: number;
+  servingUnitVi: string;
+  thumbnailUrl: string | null;
+  createdAt: string;
+  nutrition: AdminFoodNutrition | null;
+}
+
+export interface AdminFoodCategory {
+  id: number;
+  name: string;
+  foodCount: number;
+}
+
 
 export interface AdminExercise {
   id: number;
@@ -54,7 +67,7 @@ export interface AdminExercise {
   metValue: number;
   calPerKgPerHour: number;
   isVisible: boolean;
-  imageUrl: string | null;
+  iconUrl: string | null;
 }
 
 export interface DashboardStats {

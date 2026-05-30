@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { adminFoods } from '../services/adminApiConfig';
-import type { AdminFood, FoodStats } from '../services/adminApiConfig';
+import type { AdminFood, AdminFoodCategory, FoodStats } from '../services/adminApiConfig';
 import { useToast } from '../components/Toast';
 import { 
   Search, 
   Plus, 
-  Upload, 
   Eye, 
   EyeOff, 
   Edit, 
@@ -16,13 +15,31 @@ import {
   Database
 } from 'lucide-react';
 
+// Category name mapping (matches backend)
+const CATEGORY_NAMES: Record<number, string> = {
+  1: 'Ngũ cốc & Tinh bột',
+  2: 'Rau củ',
+  3: 'Trái cây',
+  4: 'Thịt & Hải sản',
+  5: 'Sữa & Trứng',
+  6: 'Đậu & Hạt',
+  7: 'Dầu & Chất béo',
+  8: 'Gia vị & Nước chấm',
+  9: 'Đồ uống',
+  10: 'Thức ăn nhanh',
+  11: 'Bánh & Kẹo',
+  12: 'Khác',
+};
+
+const getCategoryName = (id: number) => CATEGORY_NAMES[id] || `Danh mục ${id}`;
+
 export const Foods: React.FC = () => {
   const [foods, setFoods] = useState<AdminFood[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<AdminFoodCategory[]>([]);
   const [stats, setStats] = useState<FoodStats | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [visibilityFilter, setVisibilityFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState<number | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<number | 'all'>('all');
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -32,19 +49,14 @@ export const Foods: React.FC = () => {
   const [editingFood, setEditingFood] = useState<AdminFood | null>(null);
   const [nameVi, setNameVi] = useState('');
   const [nameEn, setNameEn] = useState('');
-  const [category, setCategory] = useState('');
+  const [categoryId, setCategoryId] = useState<number>(1);
   const [calories, setCalories] = useState('');
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
-  const [servingSize, setServingSize] = useState('100');
-  const [unit, setUnit] = useState('g');
+  const [servingSizeG, setServingSizeG] = useState('100');
+  const [servingUnitVi, setServingUnitVi] = useState('g');
   const [actionLoading, setActionLoading] = useState(false);
-
-  // CSV Import state
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [csvText, setCsvText] = useState('');
-  const [importing, setImporting] = useState(false);
 
   const { showToast } = useToast();
 
@@ -55,11 +67,11 @@ export const Foods: React.FC = () => {
         page,
         pageSize: 15,
         search: searchQuery || undefined,
-        category: categoryFilter !== 'all' ? categoryFilter : undefined,
-        visibility: visibilityFilter !== 'all' ? visibilityFilter : undefined,
+        categoryId: categoryFilter !== 'all' ? categoryFilter : undefined,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
       });
       setFoods(response.data);
-      setTotalPages(response.totalPages);
+      setTotalPages(response.totalPages || 1);
     } catch (error: any) {
       showToast(error.message || 'Không thể tải danh sách món ăn', 'error');
     } finally {
@@ -82,7 +94,7 @@ export const Foods: React.FC = () => {
 
   useEffect(() => {
     fetchFoods();
-  }, [page, categoryFilter, visibilityFilter]);
+  }, [page, categoryFilter, statusFilter]);
 
   // Debounced search
   useEffect(() => {
@@ -100,19 +112,20 @@ export const Foods: React.FC = () => {
 
   const handleToggleVisibility = async (food: AdminFood) => {
     try {
-      const updated = await adminFoods.toggleVisibility(food.id);
+      await adminFoods.toggleVisibility(food.id);
+      const newStatus = food.status === 1 ? 0 : 1;
       showToast(
-        `${updated.isVisible ? 'Đã hiển thị' : 'Đã ẩn'} món ăn ${updated.nameVi}`,
+        `${newStatus === 1 ? 'Đã hiển thị' : 'Đã ẩn'} món ăn ${food.nameVi}`,
         'success'
       );
-      setFoods(foods.map((f) => (f.id === food.id ? updated : f)));
+      setFoods(foods.map((f) => (f.id === food.id ? { ...f, status: newStatus } : f)));
       fetchFiltersAndStats();
     } catch (error: any) {
       showToast(error.message || 'Có lỗi xảy ra', 'error');
     }
   };
 
-  const handleDeleteFood = async (id: number) => {
+  const handleDeleteFood = async (id: string) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa món ăn này ra khỏi cơ sở dữ liệu?')) {
       return;
     }
@@ -130,48 +143,49 @@ export const Foods: React.FC = () => {
     setEditingFood(null);
     setNameVi('');
     setNameEn('');
-    setCategory('');
+    setCategoryId(1);
     setCalories('');
     setProtein('');
     setCarbs('');
     setFat('');
-    setServingSize('100');
-    setUnit('g');
+    setServingSizeG('100');
+    setServingUnitVi('g');
     setShowFoodModal(true);
   };
 
   const handleOpenEditModal = (food: AdminFood) => {
     setEditingFood(food);
     setNameVi(food.nameVi);
-    setNameEn(food.nameEn);
-    setCategory(food.category);
-    setCalories(food.calories.toString());
-    setProtein(food.protein.toString());
-    setCarbs(food.carbs.toString());
-    setFat(food.fat.toString());
-    setServingSize(food.servingSize.toString());
-    setUnit(food.unit);
+    setNameEn(food.nameEn || '');
+    setCategoryId(food.categoryId);
+    setCalories(food.nutrition?.caloriesKcal?.toString() || '');
+    setProtein(food.nutrition?.proteinG?.toString() || '');
+    setCarbs(food.nutrition?.carbsG?.toString() || '');
+    setFat(food.nutrition?.fatG?.toString() || '');
+    setServingSizeG(food.servingSizeG?.toString() || '100');
+    setServingUnitVi(food.servingUnitVi || 'g');
     setShowFoodModal(true);
   };
 
   const handleSaveFood = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nameVi || !category || !calories || !protein || !carbs || !fat || !servingSize || !unit) {
+    if (!nameVi || !calories || !protein || !carbs || !fat || !servingSizeG || !servingUnitVi) {
       showToast('Vui lòng điền đầy đủ thông tin bắt buộc', 'warning');
       return;
     }
 
     const foodData = {
       nameVi,
-      nameEn,
-      category,
-      calories: parseFloat(calories),
-      protein: parseFloat(protein),
-      carbs: parseFloat(carbs),
-      fat: parseFloat(fat),
-      servingSize: parseFloat(servingSize),
-      unit,
-      isVisible: editingFood ? editingFood.isVisible : true,
+      nameEn: nameEn || undefined,
+      categoryId,
+      servingSizeG: parseFloat(servingSizeG),
+      servingUnitVi,
+      nutrition: {
+        caloriesKcal: parseFloat(calories),
+        proteinG: parseFloat(protein),
+        carbsG: parseFloat(carbs),
+        fatG: parseFloat(fat),
+      },
     };
 
     setActionLoading(true);
@@ -193,28 +207,6 @@ export const Foods: React.FC = () => {
     }
   };
 
-  const handleImportCsv = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!csvText.trim()) {
-      showToast('Vui lòng nhập nội dung CSV', 'warning');
-      return;
-    }
-
-    setImporting(true);
-    try {
-      const result = await adminFoods.importCsv(csvText);
-      showToast(`Nhập dữ liệu thành công! Đã thêm ${result.imported} món ăn.`, 'success');
-      setShowImportModal(false);
-      setCsvText('');
-      fetchFoods();
-      fetchFiltersAndStats();
-    } catch (error: any) {
-      showToast(error.message || 'Lỗi định dạng dữ liệu hoặc import thất bại', 'error');
-    } finally {
-      setImporting(false);
-    }
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       {/* Grid Stats */}
@@ -230,6 +222,10 @@ export const Foods: React.FC = () => {
           <div className="card-premium">
             <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Đang hiển thị</span>
             <h3 style={{ fontSize: '24px', fontWeight: 800, marginTop: '8px', color: 'var(--color-success)' }}>{stats.visible}</h3>
+          </div>
+          <div className="card-premium">
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Đang ẩn</span>
+            <h3 style={{ fontSize: '24px', fontWeight: 800, marginTop: '8px', color: 'var(--color-danger)' }}>{stats.hidden}</h3>
           </div>
           <div className="card-premium">
             <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Số danh mục</span>
@@ -257,31 +253,27 @@ export const Foods: React.FC = () => {
 
           <select 
             value={categoryFilter} 
-            onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }} 
+            onChange={(e) => { setCategoryFilter(e.target.value === 'all' ? 'all' : Number(e.target.value)); setPage(1); }} 
             className="select-premium"
           >
             <option value="all">Tất cả danh mục</option>
-            {categories.map((c, idx) => (
-              <option key={idx} value={c}>{c}</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>{c.name} ({c.foodCount})</option>
             ))}
           </select>
 
           <select 
-            value={visibilityFilter} 
-            onChange={(e) => { setVisibilityFilter(e.target.value); setPage(1); }} 
+            value={statusFilter} 
+            onChange={(e) => { setStatusFilter(e.target.value === 'all' ? 'all' : Number(e.target.value)); setPage(1); }} 
             className="select-premium"
           >
             <option value="all">Tất cả trạng thái</option>
-            <option value="visible">Đang hiện</option>
-            <option value="hidden">Đang ẩn</option>
+            <option value={1}>Đang hiện</option>
+            <option value={0}>Đang ẩn</option>
           </select>
         </div>
 
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={() => setShowImportModal(true)} className="btn-premium btn-secondary" style={{ padding: '10px 16px', borderRadius: '8px' }}>
-            <Upload size={16} />
-            <span>Nhập CSV</span>
-          </button>
           <button onClick={handleOpenCreateModal} className="btn-premium" style={{ padding: '10px 16px', borderRadius: '8px' }}>
             <Plus size={16} />
             <span>Thêm món</span>
@@ -316,25 +308,25 @@ export const Foods: React.FC = () => {
             </thead>
             <tbody>
               {foods.map((food) => (
-                <tr key={food.id} style={{ opacity: food.isVisible ? 1 : 0.6 }}>
+                <tr key={food.id} style={{ opacity: food.status === 1 ? 1 : 0.6 }}>
                   <td>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{food.nameVi}</span>
                       <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{food.nameEn || '—'}</span>
                     </div>
                   </td>
-                  <td><span className="badge-custom badge-muted">{food.category}</span></td>
-                  <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{food.calories} kcal</td>
-                  <td>{food.protein}g</td>
-                  <td>{food.carbs}g</td>
-                  <td>{food.fat}g</td>
-                  <td>{food.servingSize} {food.unit}</td>
+                  <td><span className="badge-custom badge-muted">{getCategoryName(food.categoryId)}</span></td>
+                  <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{food.nutrition?.caloriesKcal ?? '—'} kcal</td>
+                  <td>{food.nutrition?.proteinG ?? '—'}g</td>
+                  <td>{food.nutrition?.carbsG ?? '—'}g</td>
+                  <td>{food.nutrition?.fatG ?? '—'}g</td>
+                  <td>{food.servingSizeG} {food.servingUnitVi}</td>
                   <td>
                     <button 
                       onClick={() => handleToggleVisibility(food)} 
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: food.isVisible ? 'var(--color-success)' : 'var(--color-text-muted)' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: food.status === 1 ? 'var(--color-success)' : 'var(--color-text-muted)' }}
                     >
-                      {food.isVisible ? <Eye size={18} /> : <EyeOff size={18} />}
+                      {food.status === 1 ? <Eye size={18} /> : <EyeOff size={18} />}
                     </button>
                   </td>
                   <td>
@@ -395,15 +387,19 @@ export const Foods: React.FC = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 0.8fr', gap: '12px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-muted)' }}>Danh mục thực phẩm *</label>
-                  <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Hải sản, Tinh bột..." className="input-premium" required />
+                  <select value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))} className="select-premium" required>
+                    {Object.entries(CATEGORY_NAMES).map(([id, name]) => (
+                      <option key={id} value={id}>{name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-muted)' }}>Định lượng *</label>
-                  <input type="number" value={servingSize} onChange={(e) => setServingSize(e.target.value)} placeholder="100" className="input-premium" required />
+                  <input type="number" value={servingSizeG} onChange={(e) => setServingSizeG(e.target.value)} placeholder="100" className="input-premium" required />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-muted)' }}>Đơn vị *</label>
-                  <input type="text" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="g, ml, quả" className="input-premium" required />
+                  <input type="text" value={servingUnitVi} onChange={(e) => setServingUnitVi(e.target.value)} placeholder="g, ml, quả" className="input-premium" required />
                 </div>
               </div>
 
@@ -437,52 +433,6 @@ export const Foods: React.FC = () => {
                 <button type="submit" className="btn-premium" style={{ padding: '8px 16px', borderRadius: '8px' }} disabled={actionLoading}>
                   {actionLoading ? 'Đang lưu...' : 'Lưu lại'}
                 </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* CSV Bulk Import Dialog */}
-      {showImportModal && (
-        <div className="modal-backdrop">
-          <div className="modal-content" style={{ maxWidth: '640px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>Nhập thực đơn hàng loạt bằng CSV</h3>
-              <button onClick={() => setShowImportModal(false)} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}>
-                <X size={20} />
-              </button>
-            </div>
-
-            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: '1.6' }}>
-              Dán nội dung CSV của bạn vào khung bên dưới. Dòng đầu tiên phải là header chính xác theo cấu trúc:<br />
-              <code style={{ color: 'var(--color-primary)', backgroundColor: 'rgba(255,255,255,0.03)', padding: '2px 4px', borderRadius: '4px', fontSize: '11px' }}>
-                nameVi, nameEn, category, calories, protein, carbs, fat, servingSize, unit
-              </code>
-            </p>
-
-            <form onSubmit={handleImportCsv} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <textarea
-                value={csvText}
-                onChange={(e) => setCsvText(e.target.value)}
-                placeholder="nameVi, nameEn, category, calories, protein, carbs, fat, servingSize, unit&#10;Cơm gạo lứt, Brown Rice, Tinh bột, 110, 2.6, 23, 0.9, 100, g&#10;Ức gà áp chảo, Pan-seared Chicken, Thịt, 165, 31, 0, 3.6, 100, g"
-                className="input-premium"
-                style={{ minHeight: '220px', fontFamily: 'monospace', fontSize: '12px', resize: 'vertical', lineHeight: '1.5' }}
-                required
-              />
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                  💡 Dấu phẩy ngăn cách các trường dinh dưỡng.
-                </span>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button type="button" onClick={() => setShowImportModal(false)} className="btn-premium btn-secondary" style={{ padding: '8px 16px', borderRadius: '8px' }}>
-                    Hủy
-                  </button>
-                  <button type="submit" className="btn-premium" style={{ padding: '8px 16px', borderRadius: '8px' }} disabled={importing}>
-                    {importing ? 'Đang import...' : 'Bắt đầu import'}
-                  </button>
-                </div>
               </div>
             </form>
           </div>

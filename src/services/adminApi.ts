@@ -5,6 +5,7 @@ import type {
   VipPackage, 
   Transaction, 
   AdminFood, 
+  AdminFoodCategory,
   AdminExercise, 
   DashboardStats, 
   FoodStats, 
@@ -37,7 +38,24 @@ adminApiClient.interceptors.request.use(
 
 // Response interceptor for error handling
 adminApiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Automatically unwrap backend { success: true, data: ... } wrapper
+    if (response.data && response.data.success !== undefined && response.data.data !== undefined) {
+      if (Array.isArray(response.data.data)) {
+        // Convert to paginated response for lists
+        response.data = {
+          data: response.data.data,
+          total: response.data.data.length,
+          page: 1,
+          pageSize: 20,
+          totalPages: 1
+        };
+      } else {
+        response.data = response.data.data;
+      }
+    }
+    return response;
+  },
   async (error) => {
     if (error.response?.status === 401) {
       adminTokenStore.clearToken();
@@ -171,35 +189,50 @@ export const adminFoods = {
     page?: number;
     pageSize?: number;
     search?: string;
-    category?: string;
-    visibility?: string;
+    categoryId?: number;
+    status?: number;
   }): Promise<PaginatedResponse<AdminFood>> => {
     const response = await adminApiClient.get('/foods', { params });
     return response.data;
   },
 
-  getById: async (id: number): Promise<AdminFood> => {
+  getById: async (id: string): Promise<AdminFood> => {
     const response = await adminApiClient.get(`/foods/${id}`);
     return response.data;
   },
 
-  create: async (data: Partial<AdminFood>): Promise<AdminFood> => {
+  create: async (data: {
+    nameVi: string;
+    nameEn?: string;
+    categoryId: number;
+    servingSizeG: number;
+    servingUnitVi?: string;
+    thumbnailUrl?: string;
+    nutrition: { caloriesKcal: number; proteinG: number; carbsG: number; fatG: number };
+  }): Promise<AdminFood> => {
     const response = await adminApiClient.post('/foods', data);
     return response.data;
   },
 
-  update: async (id: number, data: Partial<AdminFood>): Promise<AdminFood> => {
+  update: async (id: string, data: {
+    nameVi?: string;
+    nameEn?: string;
+    categoryId?: number;
+    servingSizeG?: number;
+    servingUnitVi?: string;
+    thumbnailUrl?: string;
+    nutrition?: { caloriesKcal: number; proteinG: number; carbsG: number; fatG: number };
+  }): Promise<AdminFood> => {
     const response = await adminApiClient.put(`/foods/${id}`, data);
     return response.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await adminApiClient.delete(`/foods/${id}`);
   },
 
-  toggleVisibility: async (id: number): Promise<AdminFood> => {
-    const response = await adminApiClient.put(`/foods/${id}/toggle-visibility`);
-    return response.data;
+  toggleVisibility: async (id: string): Promise<void> => {
+    await adminApiClient.put(`/foods/${id}/toggle-visibility`);
   },
 
   getStats: async (): Promise<FoodStats> => {
@@ -207,14 +240,11 @@ export const adminFoods = {
     return response.data;
   },
 
-  importCsv: async (csvData: string): Promise<{ imported: number }> => {
-    const response = await adminApiClient.post('/foods/import-csv', { csvData });
-    return response.data;
-  },
-
-  getCategories: async (): Promise<string[]> => {
+  getCategories: async (): Promise<AdminFoodCategory[]> => {
     const response = await adminApiClient.get('/foods/categories');
-    return response.data;
+    // The interceptor wraps array responses in a paginated object { data: [...] }
+    // so we need to unwrap it here
+    return Array.isArray(response.data) ? response.data : (response.data?.data ?? []);
   },
 };
 

@@ -33,7 +33,7 @@ export const Exercises: React.FC = () => {
   const [nameEn, setNameEn] = useState('');
   const [category, setCategory] = useState('');
   const [metValue, setMetValue] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [iconUrl, setIconUrl] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
   const { showToast } = useToast();
@@ -122,7 +122,7 @@ export const Exercises: React.FC = () => {
     setNameEn('');
     setCategory('');
     setMetValue('');
-    setImageUrl('');
+    setIconUrl('');
     setShowModal(true);
   };
 
@@ -132,7 +132,7 @@ export const Exercises: React.FC = () => {
     setNameEn(ex.nameEn);
     setCategory(ex.category);
     setMetValue(ex.metValue.toString());
-    setImageUrl(ex.imageUrl || '');
+    setIconUrl(ex.iconUrl || '');
     setShowModal(true);
   };
 
@@ -155,7 +155,7 @@ export const Exercises: React.FC = () => {
       category,
       metValue: valMET,
       calPerKgPerHour: valMET,
-      imageUrl: imageUrl.trim() || null,
+      iconUrl: iconUrl.trim() || null,
       isVisible: editingEx ? editingEx.isVisible : true,
     };
 
@@ -274,8 +274,8 @@ export const Exercises: React.FC = () => {
                 <tr key={ex.id} style={{ opacity: ex.isVisible ? 1 : 0.6 }}>
                   <td>
                     <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: 'var(--bg-surface-hover)', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
-                      {ex.imageUrl ? (
-                        <img src={ex.imageUrl} alt={ex.nameVi} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      {ex.iconUrl ? (
+                        <img src={ex.iconUrl} alt={ex.nameVi} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                       ) : (
                         <span style={{ fontSize: '18px' }}>💪</span>
                       )}
@@ -366,7 +366,7 @@ export const Exercises: React.FC = () => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-muted)' }}>Đường dẫn hình ảnh minh họa (URL)</label>
-                <input type="text" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://res.cloudinary.com/..." className="input-premium" />
+                <input type="text" value={iconUrl} onChange={(e) => setIconUrl(e.target.value)} placeholder="https://res.cloudinary.com/..." className="input-premium" />
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
