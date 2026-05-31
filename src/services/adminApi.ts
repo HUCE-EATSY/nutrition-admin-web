@@ -39,8 +39,8 @@ adminApiClient.interceptors.request.use(
 // Response interceptor for error handling
 adminApiClient.interceptors.response.use(
   (response) => {
-    // Automatically unwrap backend { success: true, data: ... } wrapper
-    if (response.data && response.data.success !== undefined && response.data.data !== undefined) {
+    // Automatically unwrap backend { isSuccess: true, data: ... } wrapper
+    if (response.data && response.data.isSuccess !== undefined && response.data.data !== undefined) {
       if (Array.isArray(response.data.data)) {
         // Convert to paginated response for lists
         response.data = {
@@ -52,6 +52,11 @@ adminApiClient.interceptors.response.use(
         };
       } else {
         response.data = response.data.data;
+        // Normalize PaginatedResponse from C# (items -> data, totalCount -> total)
+        if (response.data && response.data.items !== undefined) {
+          response.data.data = response.data.items;
+          response.data.total = response.data.totalCount;
+        }
       }
     }
     return response;
@@ -106,12 +111,12 @@ export const adminDashboard = {
     const response = await adminApiClient.get('/dashboard/recent-activity', {
       params: { limit },
     });
-    return response.data;
+    return Array.isArray(response.data) ? response.data : (response.data?.data ?? []);
   },
 
   getUserGrowth: async () => {
     const response = await adminApiClient.get('/dashboard/user-growth');
-    return response.data;
+    return Array.isArray(response.data) ? response.data : (response.data?.data ?? []);
   }
 };
 
@@ -128,22 +133,22 @@ export const adminUsers = {
     return response.data;
   },
 
-  getById: async (id: number): Promise<AdminUser> => {
+  getById: async (id: string): Promise<AdminUser> => {
     const response = await adminApiClient.get(`/users/${id}`);
     return response.data;
   },
 
-  toggleLock: async (id: number): Promise<AdminUser> => {
+  toggleLock: async (id: string): Promise<AdminUser> => {
     const response = await adminApiClient.put(`/users/${id}/toggle-lock`);
     return response.data;
   },
 
-  grantVip: async (userId: number, packageId: number): Promise<AdminUser> => {
+  grantVip: async (userId: string, packageId: number): Promise<AdminUser> => {
     const response = await adminApiClient.post(`/users/${userId}/grant-vip`, { packageId });
     return response.data;
   },
 
-  revokeVip: async (userId: number): Promise<AdminUser> => {
+  revokeVip: async (userId: string): Promise<AdminUser> => {
     const response = await adminApiClient.post(`/users/${userId}/revoke-vip`);
     return response.data;
   },
@@ -159,7 +164,7 @@ export const adminUsers = {
 export const adminVip = {
   getPackages: async (): Promise<VipPackage[]> => {
     const response = await adminApiClient.get('/vip/packages');
-    return response.data;
+    return Array.isArray(response.data) ? response.data : (response.data?.data ?? []);
   },
 
   createPackage: async (data: Partial<VipPackage>): Promise<VipPackage> => {
@@ -255,33 +260,50 @@ export const adminExercises = {
     page?: number;
     pageSize?: number;
     search?: string;
-    category?: string;
-    visibility?: string;
+    categoryId?: number;
+    status?: number;
   }): Promise<PaginatedResponse<AdminExercise>> => {
     const response = await adminApiClient.get('/exercises', { params });
     return response.data;
   },
 
-  getById: async (id: number): Promise<AdminExercise> => {
+  getById: async (id: string): Promise<AdminExercise> => {
     const response = await adminApiClient.get(`/exercises/${id}`);
     return response.data;
   },
 
-  create: async (data: Partial<AdminExercise>): Promise<AdminExercise> => {
+  create: async (data: {
+    categoryId: number;
+    nameVi: string;
+    nameEn?: string;
+    description?: string;
+    metValue: number;
+    unit?: string;
+    iconUrl?: string;
+  }): Promise<AdminExercise> => {
     const response = await adminApiClient.post('/exercises', data);
     return response.data;
   },
 
-  update: async (id: number, data: Partial<AdminExercise>): Promise<AdminExercise> => {
+  update: async (id: string, data: {
+    categoryId?: number;
+    nameVi?: string;
+    nameEn?: string;
+    description?: string;
+    metValue?: number;
+    unit?: string;
+    iconUrl?: string;
+    status?: number;
+  }): Promise<AdminExercise> => {
     const response = await adminApiClient.put(`/exercises/${id}`, data);
     return response.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await adminApiClient.delete(`/exercises/${id}`);
   },
 
-  toggleVisibility: async (id: number): Promise<AdminExercise> => {
+  toggleVisibility: async (id: string): Promise<AdminExercise> => {
     const response = await adminApiClient.put(`/exercises/${id}/toggle-visibility`);
     return response.data;
   },
@@ -291,9 +313,9 @@ export const adminExercises = {
     return response.data;
   },
 
-  getCategories: async (): Promise<string[]> => {
+  getCategories: async (): Promise<any[]> => {
     const response = await adminApiClient.get('/exercises/categories');
-    return response.data;
+    return Array.isArray(response.data) ? response.data : (response.data?.data ?? []);
   },
 };
 

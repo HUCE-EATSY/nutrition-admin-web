@@ -1,5 +1,5 @@
 export interface AdminUser {
-  id: number;
+  id: string;
   email: string;
   name: string;
   createdAt: string;
@@ -60,14 +60,17 @@ export interface AdminFoodCategory {
 
 
 export interface AdminExercise {
-  id: number;
+  id: string; // Guid from backend
+  categoryId: number;
   nameVi: string;
   nameEn: string;
-  category: string;
+  description?: string | null;
+  category?: string;
   metValue: number;
-  calPerKgPerHour: number;
-  isVisible: boolean;
+  unit: string;
+  status: number; // 1 = visible, 0 = hidden
   iconUrl: string | null;
+  createdAt?: string;
 }
 
 export interface DashboardStats {

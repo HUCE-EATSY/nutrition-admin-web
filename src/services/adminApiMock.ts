@@ -91,18 +91,18 @@ export let mockFoods: AdminFood[] = [
 ];
 
 export let mockExercises: AdminExercise[] = [
-  { id: 1, nameVi: 'Chạy bộ (tốc độ vừa)', nameEn: 'Running (moderate)', category: 'Cardio', metValue: 8.0, calPerKgPerHour: 8.0, isVisible: true, iconUrl: null },
-  { id: 2, nameVi: 'Đi bộ nhanh', nameEn: 'Brisk Walking', category: 'Cardio', metValue: 3.8, calPerKgPerHour: 3.8, isVisible: true, iconUrl: null },
-  { id: 3, nameVi: 'Bơi lội', nameEn: 'Swimming', category: 'Cardio', metValue: 7.0, calPerKgPerHour: 7.0, isVisible: true, iconUrl: null },
-  { id: 4, nameVi: 'Đạp xe', nameEn: 'Cycling', category: 'Cardio', metValue: 6.0, calPerKgPerHour: 6.0, isVisible: true, iconUrl: null },
-  { id: 5, nameVi: 'Yoga', nameEn: 'Yoga', category: 'Linh hoạt', metValue: 2.5, calPerKgPerHour: 2.5, isVisible: true, iconUrl: null },
-  { id: 6, nameVi: 'Gym (luyện tạ)', nameEn: 'Weight Training', category: 'Sức mạnh', metValue: 5.0, calPerKgPerHour: 5.0, isVisible: true, iconUrl: null },
-  { id: 7, nameVi: 'Aerobic', nameEn: 'Aerobics', category: 'Cardio', metValue: 6.5, calPerKgPerHour: 6.5, isVisible: true, iconUrl: null },
-  { id: 8, nameVi: 'Nhảy dây', nameEn: 'Jump Rope', category: 'Cardio', metValue: 10.0, calPerKgPerHour: 10.0, isVisible: true, iconUrl: null },
-  { id: 9, nameVi: 'Bóng đá', nameEn: 'Football', category: 'Thể thao', metValue: 7.0, calPerKgPerHour: 7.0, isVisible: false, iconUrl: null },
-  { id: 10, nameVi: 'Cầu lông', nameEn: 'Badminton', category: 'Thể thao', metValue: 5.5, calPerKgPerHour: 5.5, isVisible: true, iconUrl: null },
-  { id: 11, nameVi: 'Bóng rổ', nameEn: 'Basketball', category: 'Thể thao', metValue: 6.5, calPerKgPerHour: 6.5, isVisible: true, iconUrl: null },
-  { id: 12, nameVi: 'Thiền', nameEn: 'Meditation', category: 'Linh hoạt', metValue: 1.5, calPerKgPerHour: 1.5, isVisible: false, iconUrl: null },
+  { id: 'mock-1', nameVi: 'Chạy bộ (tốc độ vừa)', nameEn: 'Running (moderate)', categoryId: 1, metValue: 8.0, unit: 'minutes', status: 1, iconUrl: null },
+  { id: 'mock-2', nameVi: 'Đi bộ nhanh', nameEn: 'Brisk Walking', categoryId: 1, metValue: 3.8, unit: 'minutes', status: 1, iconUrl: null },
+  { id: 'mock-3', nameVi: 'Bơi lội', nameEn: 'Swimming', categoryId: 1, metValue: 7.0, unit: 'minutes', status: 1, iconUrl: null },
+  { id: 'mock-4', nameVi: 'Đạp xe', nameEn: 'Cycling', categoryId: 1, metValue: 6.0, unit: 'minutes', status: 1, iconUrl: null },
+  { id: 'mock-5', nameVi: 'Yoga', nameEn: 'Yoga', categoryId: 3, metValue: 2.5, unit: 'minutes', status: 1, iconUrl: null },
+  { id: 'mock-6', nameVi: 'Gym (luyện tạ)', nameEn: 'Weight Training', categoryId: 2, metValue: 5.0, unit: 'minutes', status: 1, iconUrl: null },
+  { id: 'mock-7', nameVi: 'Aerobic', nameEn: 'Aerobics', categoryId: 1, metValue: 6.5, unit: 'minutes', status: 1, iconUrl: null },
+  { id: 'mock-8', nameVi: 'Nhảy dây', nameEn: 'Jump Rope', categoryId: 1, metValue: 10.0, unit: 'minutes', status: 1, iconUrl: null },
+  { id: 'mock-9', nameVi: 'Bóng đá', nameEn: 'Football', categoryId: 4, metValue: 7.0, unit: 'minutes', status: 0, iconUrl: null },
+  { id: 'mock-10', nameVi: 'Cầu lông', nameEn: 'Badminton', categoryId: 4, metValue: 5.5, unit: 'minutes', status: 1, iconUrl: null },
+  { id: 'mock-11', nameVi: 'Bóng rổ', nameEn: 'Basketball', categoryId: 4, metValue: 6.5, unit: 'minutes', status: 1, iconUrl: null },
+  { id: 'mock-12', nameVi: 'Thiền', nameEn: 'Meditation', categoryId: 3, metValue: 1.5, unit: 'minutes', status: 0, iconUrl: null },
 ];
 
 let nextVipPackageId = 4;
@@ -420,41 +420,44 @@ export const adminFoods = {
 // ============================================================
 
 export const adminExercises = {
-  getAll: async (params?: { page?: number; pageSize?: number; search?: string; category?: string; visibility?: string }) => {
+  getAll: async (params?: { page?: number; pageSize?: number; search?: string; categoryId?: number; status?: number }) => {
     await delay();
     let filtered = [...mockExercises];
     if (params?.search) {
       const s = params.search.toLowerCase();
       filtered = filtered.filter(e => e.nameVi.toLowerCase().includes(s) || e.nameEn.toLowerCase().includes(s));
     }
-    if (params?.category && params.category !== 'all') filtered = filtered.filter(e => e.category === params.category);
-    if (params?.visibility === 'visible') filtered = filtered.filter(e => e.isVisible);
-    else if (params?.visibility === 'hidden') filtered = filtered.filter(e => !e.isVisible);
+    if (params?.categoryId && params.categoryId !== undefined) filtered = filtered.filter(e => e.categoryId === params.categoryId);
+    if (params?.status !== undefined) filtered = filtered.filter(e => e.status === params.status);
     return paginate(filtered, params?.page || 1, params?.pageSize || 20);
   },
 
   getCategories: async () => {
     await delay(100);
-    return [...new Set(mockExercises.map(e => e.category))];
+    return [
+      { id: 1, nameVi: 'Cardio', nameEn: 'Cardio' },
+      { id: 2, nameVi: 'Sức mạnh', nameEn: 'Strength' },
+      { id: 3, nameVi: 'Linh hoạt', nameEn: 'Flexibility' },
+      { id: 4, nameVi: 'Thể thao', nameEn: 'Sports' }
+    ];
   },
 
-  create: async (data: Omit<AdminExercise, 'id'>) => {
+  create: async (data: Omit<AdminExercise, 'id' | 'createdAt'>) => {
     await delay();
-    const ex: AdminExercise = { ...data, id: nextExerciseId++, calPerKgPerHour: data.metValue };
+    const ex: AdminExercise = { ...data, id: `mock-${nextExerciseId++}`, unit: 'minutes', status: data.status ?? 1 };
     mockExercises.push(ex);
     return ex;
   },
 
-  update: async (id: number, data: Partial<AdminExercise>) => {
+  update: async (id: string, data: Partial<AdminExercise>) => {
     await delay();
     const idx = mockExercises.findIndex(e => e.id === id);
     if (idx === -1) throw new Error('Exercise not found');
-    if (data.metValue) data.calPerKgPerHour = data.metValue;
     mockExercises[idx] = { ...mockExercises[idx], ...data };
     return mockExercises[idx];
   },
 
-  delete: async (id: number) => {
+  delete: async (id: string) => {
     await delay();
     const idx = mockExercises.findIndex(e => e.id === id);
     if (idx === -1) throw new Error('Exercise not found');
@@ -462,11 +465,11 @@ export const adminExercises = {
     return { success: true };
   },
 
-  toggleVisibility: async (id: number) => {
+  toggleVisibility: async (id: string) => {
     await delay();
     const idx = mockExercises.findIndex(e => e.id === id);
     if (idx === -1) throw new Error('Exercise not found');
-    mockExercises[idx].isVisible = !mockExercises[idx].isVisible;
+    mockExercises[idx].status = mockExercises[idx].status === 1 ? 0 : 1;
     return mockExercises[idx];
   },
 
@@ -474,8 +477,8 @@ export const adminExercises = {
     await delay();
     return {
       total: mockExercises.length,
-      visible: mockExercises.filter(e => e.isVisible).length,
-      categories: [...new Set(mockExercises.map(e => e.category))].length,
+      visible: mockExercises.filter(e => e.status === 1).length,
+      categories: [...new Set(mockExercises.map(e => e.categoryId))].length,
     };
   },
 };

@@ -17,11 +17,11 @@ import {
 
 export const Exercises: React.FC = () => {
   const [exercises, setExercises] = useState<AdminExercise[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<{id: number, nameVi: string, nameEn: string}[]>([]);
   const [stats, setStats] = useState<ExerciseStats | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [visibilityFilter, setVisibilityFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -45,8 +45,8 @@ export const Exercises: React.FC = () => {
         page,
         pageSize: 15,
         search: searchQuery || undefined,
-        category: categoryFilter !== 'all' ? categoryFilter : undefined,
-        visibility: visibilityFilter !== 'all' ? visibilityFilter : undefined,
+        categoryId: categoryFilter !== 'all' ? parseInt(categoryFilter) : undefined,
+        status: statusFilter !== 'all' ? (statusFilter === 'visible' ? 1 : 0) : undefined,
       });
       setExercises(response.data);
       setTotalPages(response.totalPages);
@@ -72,7 +72,7 @@ export const Exercises: React.FC = () => {
 
   useEffect(() => {
     fetchExercises();
-  }, [page, categoryFilter, visibilityFilter]);
+  }, [page, categoryFilter, statusFilter]);
 
   // Debounced search
   useEffect(() => {
@@ -92,7 +92,7 @@ export const Exercises: React.FC = () => {
     try {
       const updated = await adminExercises.toggleVisibility(ex.id);
       showToast(
-        `${updated.isVisible ? 'Đã hiển thị' : 'Đã ẩn'} bài tập ${updated.nameVi}`,
+        `${updated.status === 1 ? 'Đã hiển thị' : 'Đã ẩn'} bài tập ${updated.nameVi}`,
         'success'
       );
       setExercises(exercises.map((item) => (item.id === ex.id ? updated : item)));
@@ -102,7 +102,7 @@ export const Exercises: React.FC = () => {
     }
   };
 
-  const handleDeleteExercise = async (id: number) => {
+  const handleDeleteExercise = async (id: string) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa bài tập này ra khỏi hệ thống?')) {
       return;
     }
@@ -129,8 +129,8 @@ export const Exercises: React.FC = () => {
   const handleOpenEditModal = (ex: AdminExercise) => {
     setEditingEx(ex);
     setNameVi(ex.nameVi);
-    setNameEn(ex.nameEn);
-    setCategory(ex.category);
+    setNameEn(ex.nameEn || '');
+    setCategory(ex.categoryId.toString());
     setMetValue(ex.metValue.toString());
     setIconUrl(ex.iconUrl || '');
     setShowModal(true);
@@ -152,11 +152,11 @@ export const Exercises: React.FC = () => {
     const exData = {
       nameVi,
       nameEn,
-      category,
+      categoryId: parseInt(category),
       metValue: valMET,
-      calPerKgPerHour: valMET,
-      iconUrl: iconUrl.trim() || null,
-      isVisible: editingEx ? editingEx.isVisible : true,
+      unit: 'minutes',
+      iconUrl: iconUrl.trim() || undefined,
+      status: editingEx ? editingEx.status : 1,
     };
 
     setActionLoading(true);
@@ -224,14 +224,14 @@ export const Exercises: React.FC = () => {
             className="select-premium"
           >
             <option value="all">Tất cả phân loại</option>
-            {categories.map((c, idx) => (
-              <option key={idx} value={c}>{c}</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id.toString()}>{c.nameVi}</option>
             ))}
           </select>
 
           <select 
-            value={visibilityFilter} 
-            onChange={(e) => { setVisibilityFilter(e.target.value); setPage(1); }} 
+            value={statusFilter} 
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} 
             className="select-premium"
           >
             <option value="all">Tất cả trạng thái</option>
@@ -271,7 +271,7 @@ export const Exercises: React.FC = () => {
             </thead>
             <tbody>
               {exercises.map((ex) => (
-                <tr key={ex.id} style={{ opacity: ex.isVisible ? 1 : 0.6 }}>
+                <tr key={ex.id} style={{ opacity: ex.status === 1 ? 1 : 0.6 }}>
                   <td>
                     <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: 'var(--bg-surface-hover)', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
                       {ex.iconUrl ? (
@@ -287,15 +287,15 @@ export const Exercises: React.FC = () => {
                       <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{ex.nameEn || '—'}</span>
                     </div>
                   </td>
-                  <td><span className="badge-custom badge-muted">{ex.category}</span></td>
+                  <td><span className="badge-custom badge-muted">{categories.find(c => c.id === ex.categoryId)?.nameVi || ex.categoryId}</span></td>
                   <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{ex.metValue}</td>
                   <td style={{ fontWeight: 500 }}>{ex.metValue * 1} kcal</td>
                   <td>
                     <button 
                       onClick={() => handleToggleVisibility(ex)} 
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: ex.isVisible ? 'var(--color-success)' : 'var(--color-text-muted)' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: ex.status === 1 ? 'var(--color-success)' : 'var(--color-text-muted)' }}
                     >
-                      {ex.isVisible ? <Eye size={18} /> : <EyeOff size={18} />}
+                      {ex.status === 1 ? <Eye size={18} /> : <EyeOff size={18} />}
                     </button>
                   </td>
                   <td>
@@ -356,7 +356,12 @@ export const Exercises: React.FC = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '12px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-muted)' }}>Phân loại bài tập *</label>
-                  <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Cardio, Sức mạnh, Linh hoạt..." className="input-premium" required />
+                  <select value={category} onChange={(e) => setCategory(e.target.value)} className="select-premium" required>
+                    <option value="" disabled>Chọn phân loại</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id.toString()}>{c.nameVi}</option>
+                    ))}
+                  </select>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-muted)' }}>Chỉ số MET *</label>
