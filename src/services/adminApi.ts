@@ -39,8 +39,12 @@ adminApiClient.interceptors.request.use(
 // Response interceptor for error handling
 adminApiClient.interceptors.response.use(
   (response) => {
-    // Automatically unwrap backend { isSuccess: true, data: ... } wrapper
-    if (response.data && response.data.isSuccess !== undefined && response.data.data !== undefined) {
+    // Automatically unwrap backend { success: true, data: ... } or { isSuccess: true, data: ... } wrapper
+    const hasWrapper = (response.data && 
+      (response.data.success !== undefined || response.data.isSuccess !== undefined) && 
+      response.data.data !== undefined);
+    
+    if (hasWrapper) {
       if (Array.isArray(response.data.data)) {
         // Convert to paginated response for lists
         response.data = {
