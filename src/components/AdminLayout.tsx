@@ -5,7 +5,6 @@ import {
   LayoutDashboard, 
   Users, 
   Gem, 
-  Utensils, 
   Dumbbell, 
   LogOut, 
   ChevronLeft, 
@@ -17,7 +16,6 @@ const menuItems = [
   { title: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { title: 'Người dùng', icon: Users, path: '/users' },
   { title: 'Gói VIP', icon: Gem, path: '/vip' },
-  { title: 'Thực đơn', icon: Utensils, path: '/foods' },
   { title: 'Tập luyện', icon: Dumbbell, path: '/exercises' },
 ];
 
@@ -230,7 +228,6 @@ export const AdminLayout: React.FC = () => {
             {location.pathname === '/' && 'Tổng quan hệ thống'}
             {location.pathname === '/users' && 'Quản lý người dùng'}
             {location.pathname === '/vip' && 'Quản lý dịch vụ VIP'}
-            {location.pathname === '/foods' && 'Quản lý thực đơn'}
             {location.pathname === '/exercises' && 'Quản lý bài tập'}
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

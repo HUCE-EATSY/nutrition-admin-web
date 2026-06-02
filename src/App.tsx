@@ -5,7 +5,6 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Users } from './pages/Users';
 import { Vip } from './pages/Vip';
-import { Foods } from './pages/Foods';
 import { Exercises } from './pages/Exercises';
 
 function App() {
@@ -19,7 +18,6 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/users" element={<Users />} />
             <Route path="/vip" element={<Vip />} />
-            <Route path="/foods" element={<Foods />} />
             <Route path="/exercises" element={<Exercises />} />
           </Route>
           

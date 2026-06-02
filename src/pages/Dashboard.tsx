@@ -8,9 +8,7 @@ import {
   DollarSign, 
   Gem, 
   Utensils, 
-  Dumbbell,
-  RefreshCw,
-  Calendar
+  Dumbbell
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -94,44 +92,6 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-      {/* Top Banner */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.5px' }}>Chào mừng trở lại 👋</h2>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', marginTop: '4px' }}>
-            Dưới đây là thông số hoạt động của hệ thống DNT Nutrition hôm nay.
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={fetchData} className="btn-premium btn-secondary" style={{ padding: '8px 14px', borderRadius: '8px' }}>
-            <RefreshCw size={14} />
-            <span>Làm mới</span>
-          </button>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: 'var(--bg-surface)',
-            border: '1px solid var(--border-color)',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            fontSize: '13px',
-            color: 'var(--color-primary)',
-            fontWeight: 600
-          }}>
-            <Calendar size={14} />
-            <span>
-              {new Date().toLocaleDateString('vi-VN', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </span>
-          </div>
-        </div>
-      </div>
-
       {/* Grid Stats */}
       <div style={{
         display: 'grid',
