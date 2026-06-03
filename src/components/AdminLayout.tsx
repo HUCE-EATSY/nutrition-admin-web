@@ -4,19 +4,19 @@ import { adminAuth } from '../services/adminApiConfig';
 import { 
   LayoutDashboard, 
   Users, 
-  Gem, 
   Dumbbell, 
   LogOut, 
   ChevronLeft, 
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Diamond
 } from 'lucide-react';
 
 const menuItems = [
   { title: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { title: 'Người dùng', icon: Users, path: '/users' },
-  { title: 'Gói VIP', icon: Gem, path: '/vip' },
-  { title: 'Tập luyện', icon: Dumbbell, path: '/exercises' },
+  { title: 'Premium', icon: Diamond, path: '/subscriptions' },
+  { title: 'Bài tập', icon: Dumbbell, path: '/exercises' },
 ];
 
 export const AdminLayout: React.FC = () => {
@@ -227,7 +227,7 @@ export const AdminLayout: React.FC = () => {
           <h1 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-text)' }}>
             {location.pathname === '/' && 'Tổng quan hệ thống'}
             {location.pathname === '/users' && 'Quản lý người dùng'}
-            {location.pathname === '/vip' && 'Quản lý dịch vụ VIP'}
+            {location.pathname === '/subscriptions' && 'Quản lý Premium'}
             {location.pathname === '/exercises' && 'Quản lý bài tập'}
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

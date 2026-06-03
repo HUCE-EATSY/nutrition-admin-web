@@ -174,12 +174,12 @@ export const Foods: React.FC = () => {
       return;
     }
 
-    const foodData = {
+    const foodData: any = {
       nameVi,
-      nameEn: nameEn || undefined,
       categoryId,
       servingSizeG: parseFloat(servingSizeG),
       servingUnitVi,
+      status: 1, // Default to visible
       nutrition: {
         caloriesKcal: parseFloat(calories),
         proteinG: parseFloat(protein),
@@ -187,6 +187,10 @@ export const Foods: React.FC = () => {
         fatG: parseFloat(fat),
       },
     };
+    
+    if (nameEn) {
+      foodData.nameEn = nameEn;
+    }
 
     setActionLoading(true);
     try {

@@ -4,8 +4,8 @@ import { AdminLayout } from './components/AdminLayout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Users } from './pages/Users';
-import { Vip } from './pages/Vip';
 import { Exercises } from './pages/Exercises';
+import Subscriptions from './pages/Subscriptions';
 
 function App() {
   return (
@@ -17,8 +17,11 @@ function App() {
           <Route element={<AdminLayout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/users" element={<Users />} />
-            <Route path="/vip" element={<Vip />} />
+            <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/exercises" element={<Exercises />} />
+            <Route path="/foods" element={<Navigate to="/" replace />} />
+            <Route path="/premium" element={<Navigate to="/subscriptions" replace />} />
+            <Route path="/vip" element={<Navigate to="/subscriptions" replace />} />
           </Route>
           
           <Route path="*" element={<Navigate to="/" replace />} />

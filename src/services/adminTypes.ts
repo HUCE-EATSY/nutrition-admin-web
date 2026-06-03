@@ -1,16 +1,16 @@
 export interface AdminUser {
-  id: string;
+  id: number;  // Changed from string to number for mock API compatibility
   email: string;
   name: string;
   createdAt: string;
   isActive: boolean;
   isLocked: boolean;
-  vipPackageId: number | null;
-  vipPackageName: string | null;
-  vipExpiresAt: string | null;
+  premiumPackageId: number | null; // Premium package ID
+  premiumPackageName: string | null; // Premium package name
+  premiumExpiresAt: string | null; // Premium expiry date
 }
 
-export interface VipPackage {
+export interface PremiumPackage {
   id: number;
   name: string;
   price: number;
@@ -77,7 +77,7 @@ export interface DashboardStats {
   totalUsers: number;
   newUsers7Days: number;
   newUsers30Days: number;
-  activeVipUsers: number;
+  activePremiumUsers: number;
   revenueThisMonth: number;
   revenueLastMonth: number;
   totalFoods: number;
@@ -88,6 +88,7 @@ export interface DashboardStats {
 export interface UserGrowthPoint {
   date: string;
   count: number;
+  premiumCount?: number;
 }
 
 export interface FoodStats {
@@ -113,7 +114,39 @@ export interface PaginatedResponse<T> {
 
 export interface UserStats {
   total: number;
-  vip: number;
+  premium: number; // Premium users count
   locked: number;
   free: number;
+}
+
+// Subscription (Premium) Types
+export interface Subscription {
+  id: string;
+  userId: string;
+  userDisplayName: string;
+  planName: string;
+  planCode: string;
+  price: number;
+  status: string; // "Active", "Trialing", "Cancelled", "Expired", "Pending"
+  currentPeriodEnd: string;
+  createdAt: string;
+  orderId?: string;
+}
+
+export interface SubscriptionStats {
+  totalPremium: number;      // Tổng số user từng có Premium
+  activePremium: number;     // Số user đang có Premium active
+  expiredPremium: number;    // Số user Premium đã hết hạn
+  totalRevenue: number;      // Tổng doanh thu
+  monthlyRevenue: number;    // Doanh thu tháng này
+}
+
+export interface GrantPremiumRequest {
+  planId: number;
+  durationDays?: number;
+  note?: string;
+}
+
+export interface ExtendPremiumRequest {
+  additionalDays: number;
 }

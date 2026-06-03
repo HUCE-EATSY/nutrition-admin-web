@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { adminVip } from '../services/adminApiConfig';
-import type { VipPackage, Transaction } from '../services/adminApiConfig';
+import { adminPremium } from '../services/adminApiConfig';
+import type { PremiumPackage, Transaction } from '../services/adminApiConfig';
 import { useToast } from '../components/Toast';
 import { 
   Plus, 
@@ -11,8 +11,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-export const Vip: React.FC = () => {
-  const [packages, setPackages] = useState<VipPackage[]>([]);
+export const Premium: React.FC = () => {
+  const [packages, setPackages] = useState<PremiumPackage[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [txPage, setTxPage] = useState(1);
   const [txTotalPages, setTxTotalPages] = useState(1);
@@ -22,7 +22,7 @@ export const Vip: React.FC = () => {
 
   // Modal package state
   const [showPkgModal, setShowPkgModal] = useState(false);
-  const [editingPkg, setEditingPkg] = useState<VipPackage | null>(null);
+  const [editingPkg, setEditingPkg] = useState<PremiumPackage | null>(null);
   const [pkgName, setPkgName] = useState('');
   const [pkgPrice, setPkgPrice] = useState('');
   const [pkgDuration, setPkgDuration] = useState('');
@@ -34,17 +34,17 @@ export const Vip: React.FC = () => {
 
   const fetchPackages = async () => {
     try {
-      const pkgs = await adminVip.getPackages();
+      const pkgs = await adminPremium.getPackages();
       setPackages(pkgs);
     } catch (error: any) {
-      showToast(error.message || 'Không thể tải gói VIP', 'error');
+      showToast(error.message || 'Không thể tải gói Premium', 'error');
     }
   };
 
   const fetchTransactions = async () => {
     setTxLoading(true);
     try {
-      const response = await adminVip.getTransactions({
+      const response = await adminPremium.getTransactions({
         page: txPage,
         pageSize: 10,
         status: txStatusFilter !== 'all' ? txStatusFilter : undefined,
@@ -82,7 +82,7 @@ export const Vip: React.FC = () => {
     setShowPkgModal(true);
   };
 
-  const handleOpenEditModal = (pkg: VipPackage) => {
+  const handleOpenEditModal = (pkg: PremiumPackage) => {
     setEditingPkg(pkg);
     setPkgName(pkg.name);
     setPkgPrice(pkg.price.toString());
@@ -115,7 +115,7 @@ export const Vip: React.FC = () => {
     try {
       if (editingPkg) {
         // Edit package
-        const updated = await adminVip.updatePackage(editingPkg.id, {
+        const updated = await adminPremium.updatePackage(editingPkg.id, {
           name: pkgName,
           price,
           durationDays,
@@ -125,7 +125,7 @@ export const Vip: React.FC = () => {
         showToast(`Đã cập nhật gói ${updated.name}`, 'success');
       } else {
         // Create package
-        const created = await adminVip.createPackage({
+        const created = await adminPremium.createPackage({
           name: pkgName,
           price,
           durationDays,
@@ -137,22 +137,22 @@ export const Vip: React.FC = () => {
       setShowPkgModal(false);
       fetchPackages();
     } catch (error: any) {
-      showToast(error.message || 'Có lỗi khi lưu gói VIP', 'error');
+      showToast(error.message || 'Có lỗi khi lưu gói Premium', 'error');
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleDeletePackage = async (id: number) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa gói VIP này? Người dùng đang sử dụng sẽ không bị ảnh hưởng trực tiếp, nhưng gói sẽ biến mất khỏi danh sách mua.')) {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa gói Premium này? Người dùng đang sử dụng sẽ không bị ảnh hưởng trực tiếp, nhưng gói sẽ biến mất khỏi danh sách mua.')) {
       return;
     }
     try {
-      await adminVip.deletePackage(id);
-      showToast('Đã xóa gói VIP thành công', 'success');
+      await adminPremium.deletePackage(id);
+      showToast('Đã xóa gói Premium thành công', 'success');
       fetchPackages();
     } catch (error: any) {
-      showToast(error.message || 'Lỗi khi xóa gói VIP', 'error');
+      showToast(error.message || 'Lỗi khi xóa gói Premium', 'error');
     }
   };
 
@@ -184,8 +184,8 @@ export const Vip: React.FC = () => {
       <section style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>Gói Hội viên VIP đang cung cấp</h3>
-            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>Quản lý giá, thời hạn và quyền lợi các gói VIP trên ứng dụng</p>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>Gói Hội viên Premium đang cung cấp</h3>
+            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>Quản lý giá, thời hạn và quyền lợi các gói Premium trên ứng dụng</p>
           </div>
           <button onClick={handleOpenCreateModal} className="btn-premium" style={{ borderRadius: '8px' }}>
             <Plus size={16} />
@@ -248,8 +248,8 @@ export const Vip: React.FC = () => {
       <section style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>Lịch sử nâng cấp & thanh toán VIP</h3>
-            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>Danh sách giao dịch nạp VIP từ người dùng hệ thống</p>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>Lịch sử nâng cấp & thanh toán Premium</h3>
+            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>Danh sách giao dịch nạp Premium từ người dùng hệ thống</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-muted)' }}>Bộ lọc:</span>
@@ -282,7 +282,7 @@ export const Vip: React.FC = () => {
                 <tr>
                   <th>Mã GD</th>
                   <th>Hội viên</th>
-                  <th>Gói VIP</th>
+                  <th>Gói Premium</th>
                   <th>Số tiền</th>
                   <th>Thời gian</th>
                   <th>Trạng thái</th>
@@ -339,7 +339,7 @@ export const Vip: React.FC = () => {
           <div className="modal-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>
-                {editingPkg ? 'Sửa thông tin gói VIP' : 'Cung cấp gói VIP mới'}
+                {editingPkg ? 'Sửa thông tin gói Premium' : 'Cung cấp gói Premium mới'}
               </h3>
               <button onClick={() => setShowPkgModal(false)} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}>
                 <X size={20} />
@@ -348,12 +348,12 @@ export const Vip: React.FC = () => {
 
             <form onSubmit={handleSavePackage} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-muted)' }}>Tên gói VIP *</label>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-muted)' }}>Tên gói Premium *</label>
                 <input 
                   type="text" 
                   value={pkgName} 
                   onChange={(e) => setPkgName(e.target.value)} 
-                  placeholder="Ví dụ: VIP Pro..."
+                  placeholder="Ví dụ: Premium Pro..."
                   className="input-premium" 
                   required
                 />

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { adminTokenStore } from './adminTokenStore';
 import type { 
   AdminUser, 
-  VipPackage, 
+  PremiumPackage, 
   Transaction, 
   AdminFood, 
   AdminFoodCategory,
@@ -147,13 +147,13 @@ export const adminUsers = {
     return response.data;
   },
 
-  grantVip: async (userId: string, packageId: number): Promise<AdminUser> => {
-    const response = await adminApiClient.post(`/users/${userId}/grant-vip`, { packageId });
+  grantPremium: async (userId: string, packageId: number): Promise<AdminUser> => {
+    const response = await adminApiClient.post(`/users/${userId}/grant-premium`, { packageId });
     return response.data;
   },
 
-  revokeVip: async (userId: string): Promise<AdminUser> => {
-    const response = await adminApiClient.post(`/users/${userId}/revoke-vip`);
+  revokePremium: async (userId: string): Promise<AdminUser> => {
+    const response = await adminApiClient.post(`/users/${userId}/revoke-premium`);
     return response.data;
   },
 
@@ -163,30 +163,30 @@ export const adminUsers = {
   },
 };
 
-// ==================== VIP PACKAGES & TRANSACTIONS ====================
+// ==================== PREMIUM PACKAGES & TRANSACTIONS ====================
 
-export const adminVip = {
-  getPackages: async (): Promise<VipPackage[]> => {
-    const response = await adminApiClient.get('/vip/packages');
+export const adminPremium = {
+  getPackages: async (): Promise<PremiumPackage[]> => {
+    const response = await adminApiClient.get('/premium/packages');
     return Array.isArray(response.data) ? response.data : (response.data?.data ?? []);
   },
 
-  createPackage: async (data: Partial<VipPackage>): Promise<VipPackage> => {
-    const response = await adminApiClient.post('/vip/packages', data);
+  createPackage: async (data: Partial<PremiumPackage>): Promise<PremiumPackage> => {
+    const response = await adminApiClient.post('/premium/packages', data);
     return response.data;
   },
 
-  updatePackage: async (id: number, data: Partial<VipPackage>): Promise<VipPackage> => {
-    const response = await adminApiClient.put(`/vip/packages/${id}`, data);
+  updatePackage: async (id: number, data: Partial<PremiumPackage>): Promise<PremiumPackage> => {
+    const response = await adminApiClient.put(`/premium/packages/${id}`, data);
     return response.data;
   },
 
   deletePackage: async (id: number): Promise<void> => {
-    await adminApiClient.delete(`/vip/packages/${id}`);
+    await adminApiClient.delete(`/premium/packages/${id}`);
   },
 
   getTransactions: async (params?: { page?: number; pageSize?: number; status?: string }): Promise<PaginatedResponse<Transaction>> => {
-    const response = await adminApiClient.get('/vip/transactions', { params });
+    const response = await adminApiClient.get('/premium/transactions', { params });
     return response.data;
   },
 };
@@ -320,6 +320,76 @@ export const adminExercises = {
   getCategories: async (): Promise<any[]> => {
     const response = await adminApiClient.get('/exercises/categories');
     return Array.isArray(response.data) ? response.data : (response.data?.data ?? []);
+  },
+};
+
+// ==================== SUBSCRIPTIONS (PREMIUM) MANAGEMENT ====================
+
+export interface Subscription {
+  id: string;
+  userId: string;
+  userDisplayName: string;
+  planName: string;
+  planCode: string;
+  price: number;
+  status: string;
+  currentPeriodEnd: string;
+  createdAt: string;
+  orderId?: string;
+}
+
+export interface SubscriptionStats {
+  totalPremium: number;
+  activePremium: number;
+  expiredPremium: number;
+  totalRevenue: number;
+  monthlyRevenue: number;
+}
+
+export const adminSubscriptions = {
+  // Lấy tất cả subscriptions
+  getAll: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    status?: 'active' | 'trialing' | 'expired' | 'cancelled';
+    planId?: number;
+  }): Promise<PaginatedResponse<Subscription>> => {
+    const response = await adminApiClient.get('/subscriptions', { params });
+    return response.data;
+  },
+
+  // Lấy subscription history của user
+  getUserSubscriptions: async (userId: string): Promise<Subscription[]> => {
+    const response = await adminApiClient.get(`/subscriptions/user/${userId}`);
+    return Array.isArray(response.data) ? response.data : (response.data?.data ?? []);
+  },
+
+  // Cấp Premium
+  grantPremium: async (userId: string, data: {
+    planId: number;
+    durationDays?: number;
+    note?: string;
+  }): Promise<Subscription> => {
+    const response = await adminApiClient.post(`/subscriptions/user/${userId}/grant`, data);
+    return response.data;
+  },
+
+  // Thu hồi Premium
+  revokePremium: async (userId: string): Promise<void> => {
+    await adminApiClient.put(`/subscriptions/user/${userId}/revoke`);
+  },
+
+  // Gia hạn Premium
+  extendPremium: async (userId: string, data: { additionalDays: number }): Promise<Subscription> => {
+    const response = await adminApiClient.put(`/subscriptions/user/${userId}/extend`, data);
+    return response.data;
+  },
+
+  // Thống kê
+  getStats: async (): Promise<SubscriptionStats> => {
+    const response = await adminApiClient.get('/subscriptions/stats');
+    return response.data;
   },
 };
 

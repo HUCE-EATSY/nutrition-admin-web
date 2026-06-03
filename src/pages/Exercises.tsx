@@ -149,15 +149,18 @@ export const Exercises: React.FC = () => {
       return;
     }
 
-    const exData = {
+    const exData: any = {
       nameVi,
       nameEn,
       categoryId: parseInt(category),
       metValue: valMET,
       unit: 'minutes',
-      iconUrl: iconUrl.trim() || undefined,
       status: editingEx ? editingEx.status : 1,
     };
+    
+    if (iconUrl.trim()) {
+      exData.iconUrl = iconUrl.trim();
+    }
 
     setActionLoading(true);
     try {
