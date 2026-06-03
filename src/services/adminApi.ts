@@ -147,6 +147,10 @@ export const adminUsers = {
     return response.data;
   },
 
+  deleteUser: async (id: string): Promise<void> => {
+    await adminApiClient.delete(`/users/${id}`);
+  },
+
   grantPremium: async (userId: string, packageId: number): Promise<AdminUser> => {
     const response = await adminApiClient.post(`/users/${userId}/grant-premium`, { packageId });
     return response.data;

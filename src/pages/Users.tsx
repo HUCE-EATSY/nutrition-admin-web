@@ -11,7 +11,8 @@ import {
   ChevronRight,
   ShieldAlert,
   Diamond,
-  Clock
+  Clock,
+  Trash2
 } from 'lucide-react';
 
 export const Users: React.FC = () => {
@@ -100,6 +101,24 @@ export const Users: React.FC = () => {
         'success'
       );
       setUsers(users.map((u) => (u.id === user.id ? updated : u)));
+      fetchStats();
+    } catch (error: any) {
+      showToast(error.message || 'Có lỗi xảy ra', 'error');
+    }
+  };
+
+  const handleDeleteUser = async (user: AdminUser) => {
+    if (user.email === 'namdinh') {
+      showToast('Không thể xóa tài khoản Admin chính', 'warning');
+      return;
+    }
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa người dùng ${user.name}? Hành động này không thể hoàn tác.`)) {
+      return;
+    }
+    try {
+      await adminUsers.deleteUser(user.id.toString());
+      showToast(`Đã xóa người dùng ${user.name}`, 'success');
+      fetchUsers();
       fetchStats();
     } catch (error: any) {
       showToast(error.message || 'Có lỗi xảy ra', 'error');
@@ -348,6 +367,17 @@ export const Users: React.FC = () => {
                           disabled={user.email === 'namdinh'}
                         >
                           {isLocked ? 'Mở khóa' : 'Khóa'}
+                        </button>
+
+                        {/* Delete User */}
+                        <button
+                          onClick={() => handleDeleteUser(user)}
+                          className="btn-premium btn-danger"
+                          style={{ padding: '6px 10px', fontSize: '12px', borderRadius: '6px', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--color-danger)', color: 'var(--color-danger)' }}
+                          disabled={user.email === 'namdinh'}
+                          title="Xóa người dùng"
+                        >
+                          <Trash2 size={14} />
                         </button>
 
                         {/* View History */}
